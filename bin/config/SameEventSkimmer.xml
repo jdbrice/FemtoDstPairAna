@@ -1,0 +1,106 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<Task name="SameEventSkimmer" type="SameEventSkimmer" config="" nodePath="FDS" />
+
+	<FDS>
+		<EventLoop progress="true" />
+		<input>
+			<dst treeName="FemtoDst" url="./list.lis" nEvents="-1" />
+		</input>
+
+		<output>
+			<TFile url="data_same_event.root" />
+		</output>
+
+		<TrackFilter>
+			<Range name="pT" min="0" max="1000.0" />
+			<Range name="eta" min="-0.5" max="0.5" />
+			<Range name="nSigmaPion" min="-300.0" max="300.0" />
+			
+			<Range name="nHitsFit" min="25.0" max="50" />
+			<Range name="nHitsRatio" min="0.52" max="50" />
+			<Range name="nHitsDedx" min="15.0" max="50"/>
+			<Range name="dca" min="0" max="3.0" />
+
+			<!-- MTD stuff -->
+			<Range name="mtdMatchFlag" min="1" max="1000" />
+		</TrackFilter>
+
+		<MuonMLPFilter min="-1" max="1.0">
+			<weights>/Users/jdb/bnl/local/work/MtdMuonPidMva/bin/weights/TMVAClassification_MLP_all.weights.xml</weights>
+		</MuonMLPFilter>
+
+
+
+		<histograms>
+			<Histo prefixes="lsp_, lsn_, uls_" name="mass_vs_mlp" titles="(++), (--), (+-)" bins_x="bins.mass" bins_y="bins.mlp" />
+			<Histo prefixes="lsp_, lsn_, uls_" name="mlp_vs_mlp" titles="(++), (--), (+-)" bins_x="bins.mlp" bins_y="bins.mlp" />
+			<Histo prefixes="lsp_, lsn_, uls_" name="mass_vs_bgr" titles="(++), (--), (+-)" bins_x="bins.mass" bins_y="bins.mlpr" />
+			<Histo prefixes="lsp_, lsn_, uls_" name="mass_vs_sigr" titles="(++), (--), (+-)" bins_x="bins.mass" bins_y="bins.mlpr" />
+			<Histo prefixes="np_, nn_" name="mass" titles="(+), (-)" bins_x="bins.mass" bins_y="bins.n" />
+
+			<Histo prefixes="purebg_, bg_, sig_" name="mass" titles="bg(+-), bg(+-), (+-)" bins_x="bins.mass" />
+
+			<Histo name="nSig" title="# (+-) pairs" bins_x="bins.n" />
+			<Histo name="sig_nPos" title="# + sig" bins_x="bins.n" />
+			<Histo name="sig_nNeg" title="# - sig" bins_x="bins.n" />
+			<Histo name="sig_nPos_nNeg" title="# + vs. - sig" bins_x="bins.n" bins_y="bins.n" />
+
+
+			<Histo name="nPairs" title="# (+-) pairs" bins_x="bins.n" />
+			<Histo name="nPos" title="# + sig" bins_x="bins.n" />
+			<Histo name="nNeg" title="# - sig" bins_x="bins.n" />
+			<Histo name="nPos_nNeg" title="# + vs. - sig" bins_x="bins.n" bins_y="bins.n" />
+
+		</histograms>
+
+	</FDS>
+
+	
+
+	<bins>
+
+		<mlp width="0.001" min="-1.5" max="1.5" />
+		<mlpr width="0.001" min="0" max="3.5" />
+		<gRefMult type="ar" >0, 50, 1</gRefMult>
+		<vtxZ width="1" min="-105" max="105" />
+		<nPairs width="1" min="0" max="5" />
+		<triggerFlag width="1" min="0" max="15" />
+		<mass width="0.005" min="0" max="6.0" />
+		<pT width="0.025" min="0" max="7.5" />
+		<deltaPhi width="0.01" min="0" max="3.15" />
+		<deltaEta width="0.01" min="0" max="2" />
+
+		<phi width="0.02" min="-3.15" max="3.15" />
+		<eta width="0.02" min="-1" max="1" />
+
+
+		<mPt width="0.010" min="0" max="10" />
+		<mEta width="0.01" min="-2" max="2" />
+		<mPhi width="0.01" min="-3.15" max="3.15" />
+		<mId width="1" min="0" max="500" />
+		<mDedx width="0.025" min="0" max="10" />
+		<mNHitsFit width="1" min="-50" max="50" />
+		<mNHitsMax width="1" min="0" max="50" />
+		<mNHitsDedx width="1" min="0" max="50" />
+		<mNSigmaPion width="0.25" min="-6" max="6" />
+		<mNSigmaKaon width="0.25" min="-4" max="7" />
+		<mNSigmaProton width="0.25" min="-5" max="5" />
+		<mNSigmaElectron width="0.25" min="-10" max="0" />
+		<mDCA width="0.025" min="0" max="10" />
+		<n width="1" min="0" max="10" />
+
+
+		<!-- MTD -->
+		<mDeltaY width="0.25" min="-75" max="75"/>
+		<mDeltaZ width="0.25" min="-100" max="-100"/>
+		<mDeltaTimeOfFlight width="0.05" min="-5" max="5"/>
+		<mMatchFlag width="1" min="0" max="15"/>
+		<mMtdHitChan width="1" min="0" max="1850"/>
+		<mTriggerFlag width="1" min="0" max="20"/>
+		<mBackleg width="1" min="0" max="32"/>
+		<mModule width="1" min="0" max="6"/>
+		<mCell width="1" min="0" max="13"/>
+	</bins>
+
+</config>

@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<Task name="FemtoDstSkimmer" type="FemtoDstSkimmer" config="" nodePath="FDS" />
+
+	<FDS>
+		<EventLoop progress="true" />
+		<input>
+			<dst treeName="FemtoDst" url="./list.lis" splitBy="5" maxFiles="-1"/>
+		</input>
+
+		<output>
+			<TFile url="data.root" />
+		</output>
+	</FDS>
+
+	<PairHistogramMaker enable="false">
+		<Include url="PairHistogramMaker.xml"/>
+	</PairHistogramMaker>
+
+	<TrackHistogramMaker enable="true">
+		<Include url="TrackHistogramMaker.xml" />
+	</TrackHistogramMaker>
+
+	<MtdHistogramMaker enable="true">
+		<Include url="MtdHistogramMaker.xml" />
+	</MtdHistogramMaker>
+
+	<bins>
+		<gRefMult type="ar" >0, 50, 1</gRefMult>
+		<vtxZ width="1" min="-105" max="105" />
+		<nPairs width="1" min="0" max="5" />
+		<triggerFlag width="1" min="0" max="15" />
+		<mass width="0.025" min="0" max="6.0" />
+		<pT width="0.025" min="0" max="7.5" />
+		<deltaPhi width="0.01" min="0" max="3.15" />
+		<deltaEta width="0.01" min="0" max="2" />
+
+		<phi width="0.02" min="-3.15" max="3.15" />
+		<eta width="0.02" min="-1" max="1" />
+
+
+		<mPt width="0.010" min="0" max="10" />
+		<mEta width="0.01" min="-2" max="2" />
+		<mPhi width="0.01" min="-3.15" max="3.15" />
+		<mId width="1" min="0" max="500" />
+		<mDedx width="0.025" min="0" max="10" />
+		<mNHitsFit width="1" min="-50" max="50" />
+		<mNHitsMax width="1" min="0" max="50" />
+		<mNHitsDedx width="1" min="0" max="50" />
+		<mNSigmaPion width="0.25" min="-6" max="6" />
+		<mNSigmaKaon width="0.25" min="-4" max="7" />
+		<mNSigmaProton width="0.25" min="-5" max="5" />
+		<mNSigmaElectron width="0.25" min="-10" max="0" />
+		<mDCA width="0.025" min="0" max="10" />
+		<n width="1" min="0" max="10" />
+
+
+		<!-- MTD -->
+		<mDeltaY width="0.25" min="-75" max="75"/>
+		<mDeltaZ width="0.25" min="-100" max="-100"/>
+		<mDeltaTimeOfFlight width="0.05" min="-5" max="5"/>
+		<mMatchFlag width="1" min="0" max="15"/>
+		<mMtdHitChan width="1" min="0" max="1850"/>
+		<mTriggerFlag width="1" min="0" max="20"/>
+		<mBackleg width="1" min="0" max="32"/>
+		<mModule width="1" min="0" max="6"/>
+		<mCell width="1" min="0" max="13"/>
+	</bins>
+
+</config>

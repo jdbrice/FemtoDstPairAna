@@ -11,6 +11,8 @@ using namespace jdb;
 
 
 #include "FemtoDstSkimmer/FemtoDstSkimmer.h"
+#include "SameEventSkimmer/SameEventSkimmer.h"
+#include "SameEventSkimmer/PidQAMaker.h"
 #include "MixedEventSkimmer/MixedEventAnalyzer.h"
 
 #define LOGURU_IMPLEMENTATION 1
@@ -22,6 +24,8 @@ int main( int argc, char* argv[] ) {
 
 	TaskFactory::registerTaskRunner<FemtoDstSkimmer>( "FemtoDstSkimmer" );
 	TaskFactory::registerTaskRunner<MixedEventAnalyzer>( "MixedEventAnalyzer" );
+	TaskFactory::registerTaskRunner<SameEventSkimmer>( "SameEventSkimmer" );
+	TaskFactory::registerTaskRunner<PidQAMaker>( "PidQAMaker" );
 
 	TaskEngine engine( argc, argv );
 

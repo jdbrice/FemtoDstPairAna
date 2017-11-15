@@ -19,7 +19,7 @@ env.Append(CPPPATH    = [ "modules/" ])
 env.Append(CXXFLAGS   = ['-std=c++11'])
 JDB_LIB = os.environ.get("JDB_LIB", "" )
 env.Append(LIBPATH    = [ JDB_LIB + "/lib/" ] )
-env.Append(LIBS       = [ "libRooBarbCore.a", "libRooBarbConfig.a", "libRooBarbTasks.a", "libRooBarbRootAna.a", "libRooBarbUnitTest.a", "libRooBarbExtra.a" ] )
+env.Append(LIBS       = [ "TMVA", "libRooBarbCore.a", "libRooBarbConfig.a", "libRooBarbTasks.a", "libRooBarbRootAna.a", "libRooBarbUnitTest.a", "libRooBarbExtra.a" ] )
 
 # # ROOT
 ROOTCFLAGS      = subprocess.check_output( ['root-config',  '--cflags'] ).rstrip().split( " " )

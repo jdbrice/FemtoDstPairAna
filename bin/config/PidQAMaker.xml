@@ -1,36 +1,54 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config>
-	<Task name="FemtoDstSkimmer" type="FemtoDstSkimmer" config="" nodePath="FDS" />
+	<Task name="PidQAMaker" type="PidQAMaker" config="" nodePath="FDS" />
 
 	<FDS>
 		<EventLoop progress="true" />
 		<input>
-			<dst treeName="FemtoDst" url="./list.lis" splitBy="5" maxFiles="-1"/>
+			<dst treeName="FemtoDst" url="./list.lis" nEvents="-1" />
 		</input>
 
 		<output>
-			<TFile url="data.root" />
+			<TFile url="data_pid2.root" />
 		</output>
+
+		<TrackFilter>
+			<Range name="pT" min="0" max="1000.0" />
+			<Range name="eta" min="-0.5" max="0.5" />
+			<Range name="nSigmaPion" min="-300.0" max="300.0" />
+			
+			<Range name="nHitsFit" min="25.0" max="50" />
+			<Range name="nHitsRatio" min="0.52" max="50" />
+			<Range name="nHitsDedx" min="15.0" max="50"/>
+			<Range name="dca" min="0.0" max="10" />
+		</TrackFilter>
+
+		<MuonMLPFilter min="-1" max="1.0">
+			<weights>/Users/jdb/bnl/local/work/MtdMuonPidMva/bin/weights/TMVAClassification_MLP_all.weights.xml</weights>
+		</MuonMLPFilter>
+
+		<histograms>
+			<Histo prefixes="pos_, neg_" name="mlp_vs_pT" titles="(+), (-)" bins_x="bins.mPt" bins_y="bins.mlp" />
+			<Histo prefixes="lsp_, lsn_, uls_" name="mlpl_vs_mass" titles="(++), (--), (+-)" bins_x="bins.mass" bins_y="bins.mlp" />
+			<Histo prefixes="lsp_, lsn_, uls_" name="mlpsl_vs_mass" titles="(++), (--), (+-)" bins_x="bins.mass" bins_y="bins.mlp" />
+			<Histo prefixes="lsp_, lsn_, uls_" name="mlpsum_vs_mass" titles="(++), (--), (+-)" bins_x="bins.mass" bins_y="bins.mlpsum" />
+			<Histo prefixes="lsp_, lsn_, uls_" name="mlp_vs_mass" titles="(++), (--), (+-)" bins_x="bins.mass" bins_y="bins.mlp" />
+		</histograms>
+
 	</FDS>
 
-	<PairHistogramMaker>
-		<Include url="PairHistogramMaker.xml"/>
-	</PairHistogramMaker>
-
-	<TrackHistogramMaker>
-		<Include url="TrackHistogramMaker.xml" />
-	</TrackHistogramMaker>
-
-	<MtdHistogramMaker>
-		<Include url="MtdHistogramMaker.xml" />
-	</MtdHistogramMaker>
+	
 
 	<bins>
+
+		<mlp width="0.0001" min="-0.5" max="1.5" />
+		<mlpsum width="0.001" min="-1.5" max="3.0" />
+
 		<gRefMult type="ar" >0, 50, 1</gRefMult>
 		<vtxZ width="1" min="-105" max="105" />
 		<nPairs width="1" min="0" max="5" />
 		<triggerFlag width="1" min="0" max="15" />
-		<mass width="0.025" min="0" max="6.0" />
+		<mass width="0.005" min="0" max="6.0" />
 		<pT width="0.025" min="0" max="7.5" />
 		<deltaPhi width="0.01" min="0" max="3.15" />
 		<deltaEta width="0.01" min="0" max="2" />

@@ -57,8 +57,8 @@ public:
 		// if ( _tp1._track->mPt < 1.55 || _tp2._track->mPt < 1.55 ) return;
 
 		int chargeSum = _tp1._track->charge() + _tp2._track->charge();
-		FemtoTrackProxy *ltp = &_tp1;
-		FemtoTrackProxy *sltp = &_tp2;
+		FemtoTrackProxy *ltp = &_tp1; 		// leading pt 
+		FemtoTrackProxy *sltp = &_tp2; 		// sub-leading pt
 
 		if ( fabs(_tp2._track->mPt) > fabs( _tp1._track->mPt ) ){
 			ltp  = &_tp2;
@@ -87,12 +87,14 @@ public:
 		TLorentzVector lv = lv1 + lv2;
 
 		_book->fill( prefix + "mass", lv.M() );
+		
 		if ( 1 == _ltp._mtdPid->mTriggerFlag && 1 == _sltp._mtdPid->mTriggerFlag )
 			_book->fill( prefix + "mass_tf1_1", lv.M() );
-		else if ( _ltp._mtdPid->mTriggerFlag > 1 && _sltp._mtdPid->mTriggerFlag > 1 )
-			_book->fill( prefix + "mass_tf1_1", lv.M() );
-		else if ( (1 == _ltp._mtdPid->mTriggerFlag && _sltp._mtdPid->mTriggerFlag > 1) || (_ltp._mtdPid->mTriggerFlag > 1 && 1 == _sltp._mtdPid->mTriggerFlag) )
+		if ( 	(1 == _ltp._mtdPid->mTriggerFlag && _sltp._mtdPid->mTriggerFlag > 1) || 
+				(_ltp._mtdPid->mTriggerFlag > 1 && 1 == _sltp._mtdPid->mTriggerFlag) )
 			_book->fill( prefix + "mass_tf1_N", lv.M() );
+		if ( _ltp._mtdPid->mTriggerFlag >= 1 && _sltp._mtdPid->mTriggerFlag >= 1 )
+			_book->fill( prefix + "mass_tfN_N", lv.M() );
 
 		_book->fill( prefix + "pT", lv.Pt() );
 		_book->fill( prefix + "pT_lpT", lv1.Pt(), lv.Pt() );
