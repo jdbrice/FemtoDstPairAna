@@ -12,8 +12,12 @@ using namespace jdb;
 
 #include "FemtoDstSkimmer/FemtoDstSkimmer.h"
 #include "SameEventSkimmer/SameEventSkimmer.h"
+#include "SameEventSkimmer/SingleTrackSkimmer.h"
 #include "SameEventSkimmer/PidQAMaker.h"
 #include "MixedEventSkimmer/MixedEventAnalyzer.h"
+#include "SingleTrackAna/SingleTrackAna.h"
+#include "SingleTrackAna/WeightedTrackMeans.h"
+#include "SameEventSkimmer/SignalRebinner.h"
 
 #define LOGURU_IMPLEMENTATION 1
 #include "vendor/loguru.h"
@@ -25,6 +29,10 @@ int main( int argc, char* argv[] ) {
 	TaskFactory::registerTaskRunner<FemtoDstSkimmer>( "FemtoDstSkimmer" );
 	TaskFactory::registerTaskRunner<MixedEventAnalyzer>( "MixedEventAnalyzer" );
 	TaskFactory::registerTaskRunner<SameEventSkimmer>( "SameEventSkimmer" );
+	TaskFactory::registerTaskRunner<SingleTrackSkimmer>( "SingleTrackSkimmer" );
+	TaskFactory::registerTaskRunner<SingleTrackAna>( "SingleTrackAna" );
+	TaskFactory::registerTaskRunner<WeightedTrackMeans>( "WeightedTrackMeans" );
+	TaskFactory::registerTaskRunner<SignalRebinner>( "SignalRebinner" );
 	TaskFactory::registerTaskRunner<PidQAMaker>( "PidQAMaker" );
 
 	TaskEngine engine( argc, argv );

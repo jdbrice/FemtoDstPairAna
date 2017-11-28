@@ -14,7 +14,7 @@
 #include "vendor/loguru.h"
 
 #include "Filters/MtdTrackFilter.h"
-#include "Filters/MuonMlpFilter.h"
+#include "Filters/MuonMLPFilter.h"
 
 
 class SameEventSkimmer : public TreeAnalyzer
@@ -39,6 +39,8 @@ protected:
 	int nNeg;
 	int nPairs;
 
+	float sMin;
+
 
 
 public:
@@ -49,154 +51,170 @@ public:
 	virtual void initialize(){
 		TreeAnalyzer::initialize();
 
+
 		_rEvent.setup( chain, "Event" );
 		_rTracks.setup( chain, "Tracks" );
 		_rMtdPid.setup( chain, "MtdPidTraits" );
 
 		_trackFilter.load( config, nodePath + ".TrackFilter" );
 		_mlp.load( config, nodePath + ".MuonMLPFilter" );
+
+		sMin = 0.8;
 	}
 
 protected:
 
 	virtual void analyzeEvent(){
-		
-		nSig_pairs = 0;
-		sig_nPos = 0;
-		sig_nNeg = 0;
-
-		
 
 		_event = _rEvent.get();
 		
 		size_t nTracks = _rTracks.N();
-		// if ( nTracks < 2 )
-		// 	return;
 
 		nPos = 0;
 		nNeg = 0;
 		nPairs = 0;
+
+
 		for (size_t i = 0; i < nTracks; i++ ){
 			_proxy.assemble( i, _rTracks, _rMtdPid );
+			
+			if ( nullptr == _proxy._mtdPid  ) continue;
+			if ( _proxy._track->mPt < 0.01 ) continue;
+
 			if ( false == _trackFilter.pass( _proxy ) )
 				continue;
+
+			
 			if ( _proxy._track->charge() > 0 )
 				nPos++;
 			if ( _proxy._track->charge() < 0 )
 				nNeg++;
-		}
 
 
-
-		for (size_t i = 0; i < nTracks; i++ ){
-			_proxy.assemble( i, _rTracks, _rMtdPid );
-			if ( false == _trackFilter.pass( _proxy ) )
-				continue;
 			_proxy._pid = _mlp.evaluate( _proxy );
-
-			if ( _proxy._pid > 0.6 ){
-				if ( _proxy._track->charge() > 0 )
-					sig_nPos++;
-				if ( _proxy._track->charge() < 0 )
-					sig_nNeg++;
-			}
-
 
 			for (size_t j = i; j < nTracks; j++ ){
 				if ( i == j ) continue;
 				_proxy2.assemble( j, _rTracks, _rMtdPid );
-				_proxy2._pid = _mlp.evaluate( _proxy2 );
+
+				if ( nullptr == _proxy2._mtdPid  ) continue;
+				if ( _proxy2._track->mPt < 0.01 ) continue;
+
 				if ( false == _trackFilter.pass( _proxy2 ) )
 					continue;
+				
+				_proxy2._pid = _mlp.evaluate( _proxy2 );
 				analyze_pair( _proxy, _proxy2 );
 			}
-
 		}
 
 
 		// Fill Aggregate quantities
-		book->fill( "nSig", nSig_pairs );
-		book->fill( "sig_nPos", sig_nPos );
-		book->fill( "sig_nNeg", sig_nNeg );
-		book->fill( "sig_nPos_nNeg", sig_nNeg, sig_nPos );
-
 		book->fill( "nPairs", nPairs );
 		book->fill( "nPos", nPos );
 		book->fill( "nNeg", nNeg );
 		book->fill( "nPos_nNeg", nNeg, nPos );
 
-
-
 	} // analyse Event
 	
 
-	virtual void fill_prefix( 	FemtoTrackProxy &_ltp, FemtoTrackProxy &_sltp, string prefix ){
+	bool signal_pair( FemtoTrackProxy &_tp1, FemtoTrackProxy &_tp2 ){
+		if ( _tp1._pid > sMin && _tp2._pid > sMin )
+			return true;
+		return false;
+	}
 
-		TLorentzVector lv1 = _ltp._track->lv( 0.105 );
-		TLorentzVector lv2 = _sltp._track->lv( 0.105 );
-		TLorentzVector lv = lv1 + lv2;
+	bool mixed_pair( FemtoTrackProxy &_tp1, FemtoTrackProxy &_tp2 ){
+		if ( ( _tp1._pid > 0.6 && _tp2._pid < 0.4 ) || ( _tp2._pid > 0.6 && _tp1._pid < 0.4 ) )
+			return true;
+		return false;
+	}
+
+	virtual void fill_pid( TLorentzVector &lv, FemtoTrackProxy &_tp1, FemtoTrackProxy &_tp2, string prefix ){
 
 		book->fill( prefix + "mass_vs_mlp", lv.M() );
+		book->fill( prefix + "mlp_vs_mlp", _tp1._pid, _tp2._pid );
 
-		book->fill( prefix + "mlp_vs_mlp", _ltp._pid, _sltp._pid );
+		float r_sig = sqrt( pow( _tp1._pid - 1.0, 2 ) + pow( _tp2._pid - 1.0, 2 ) );
+		float r_bg = sqrt( pow( _tp1._pid, 2 ) + pow( _tp2._pid, 2 ) );
 
-		float r_sig = sqrt( pow( _ltp._pid - 1.0, 2 ) + pow( _sltp._pid - 1.0, 2 ) );
-		float r_bg = sqrt( pow( _ltp._pid, 2 ) + pow( _sltp._pid, 2 ) );
 		book->fill( prefix + "mass_vs_bgr", lv.M(), r_bg );
 		book->fill( prefix + "mass_vs_sigr", lv.M(), r_sig );
 
-		if ( "uls_" == prefix ){
-			book->fill( "np_mass", lv.M(), nPos );
-			book->fill( "nn_mass", lv.M(), nNeg );
-		}
+		// if ( "lsp_" == prefix || "lsn_" == prefix ){
+		// 	if ( signal_pair( _tp1, _tp2 ) ){
+		// 		book->fill( "ls_mass", lv.M() );
+		// 		book->fill( "ls_pt_vs_mass", lv.M(), lv.Pt() );
+		// 	}
+		// }
 	}
 
-	virtual void fill( 	FemtoTrackProxy &_ltp, FemtoTrackProxy &_sltp ){
-		TLorentzVector lv1 = _ltp._track->lv( 0.105 );
-		TLorentzVector lv2 = _sltp._track->lv( 0.105 );
+	virtual void fill( 	FemtoTrackProxy &_tp1, FemtoTrackProxy &_tp2 ){
+		TLorentzVector lv1 = _tp1._track->lv( 0.105 );
+		TLorentzVector lv2 = _tp2._track->lv( 0.105 );
 		TLorentzVector lv = lv1 + lv2;
 
-		float r_sig = sqrt( pow( _ltp._pid - 1.0, 2 ) + pow( _sltp._pid - 1.0, 2 ) );
-		float r_bg = sqrt( pow( _ltp._pid, 2 ) + pow( _sltp._pid, 2 ) );
+		float r_sig = sqrt( pow( _tp1._pid - 1.0, 2 ) + pow( _tp2._pid - 1.0, 2 ) );
+		float r_bg = sqrt( pow( _tp1._pid, 2 ) + pow( _tp2._pid, 2 ) );
 
-		if ( _ltp._pid > 0.6 && _sltp._pid > 0.6 ){
+		float dca_r = sqrt( pow( _tp1._track->gDCA(), 2 ) + pow(_tp2._track->gDCA(), 2) );
+
+		if ( signal_pair( _tp1, _tp2 ) ){
 			book->fill( "sig_mass", lv.M() );
+			book->fill( "sig_pt_vs_mass", lv.M(), lv.Pt() );
 			nSig_pairs++;
-
-		} else if ( _ltp._pid > 0.6 && _sltp._pid > 0.2 && _sltp._pid < 0.5 ){
-			book->fill( "bg_mass", lv.M() );
-		} else if ( _sltp._pid > 0.6 && _ltp._pid > 0.2 && _ltp._pid < 0.5 ){
-			book->fill( "bg_mass", lv.M() );
-		} else if ( sqrt( pow( _ltp._pid, 2 ) + pow( _sltp._pid, 2 ) ) < 0.1 ){
-			book->fill( "purebg_mass", lv.M() );
-		}
-
+		} 
 		
-
-
-
-
+		
 	}
 
 	virtual void analyze_pair( FemtoTrackProxy &_tp1, FemtoTrackProxy &_tp2 ){
-		int chargeSum = _tp1._track->charge() + _tp2._track->charge();
-		FemtoTrackProxy *ltp = &_tp1; 		// leading pt 
-		FemtoTrackProxy *sltp = &_tp2; 		// sub-leading pt
+		if ( _tp1._track->mId == _tp2._track->mId) return;
 
-		if ( fabs(_tp2._track->mPt) > fabs( _tp1._track->mPt ) ){
-			ltp  = &_tp2;
-			sltp = &_tp1;
-		}
+		int chargeSum = _tp1._track->charge() + _tp2._track->charge();
+
+		const float muon_mass = 0.1056583745; // GeV/c^2
+		TLorentzVector lv = _tp1._track->lv( muon_mass ) + _tp2._track->lv( muon_mass );
+
+		if ( lv.Pt() < 2.0 )
+			return;
+
 
 		if ( chargeSum == 2 ){
-			fill_prefix( *ltp, *sltp, "lsp_" );
+			// fill_pid( lv, _tp1, _tp2, "lsp_" );
+			// fill_pid( lv, _tp1, _tp2, "ls_" );
+			if ( signal_pair( _tp1, _tp2 ) ){
+				book->fill( "ls_mass", lv.M() );
+				book->fill( "ls_pt_vs_mass", lv.M(), lv.Pt() );
+			}
 		}
 		else if ( chargeSum == -2 ){
-			fill_prefix( *ltp, *sltp, "lsn_" );
+			// fill_pid( lv, _tp1, _tp2, "lsn_" );
+			// fill_pid( lv, _tp1, _tp2, "ls_" );
+			if ( signal_pair( _tp1, _tp2 ) ){
+				book->fill( "ls_mass", lv.M() );
+				book->fill( "ls_pt_vs_mass", lv.M(), lv.Pt() );
+			}
 		}
 		else if ( chargeSum == 0 ){
-			fill_prefix( *ltp, *sltp, "uls_" );
-			fill( *ltp, *sltp );
+			// fill_pid( lv, _tp1, _tp2, "uls_" );
+			
+			book->fill( "ruls_mass", lv.M() );
+			book->fill( "ruls_pt_vs_mass", lv.M(), lv.Pt() );
+
+			if ( signal_pair( _tp1, _tp2 ) ){
+				book->fill( "uls_mass", lv.M() );
+				book->fill( "uls_pt_vs_mass", lv.M(), lv.Pt() );
+			} else if ( _tp1._track->gDCA() > 1.0 || _tp2._track->gDCA() > 1.0 ){
+				if ( mixed_pair( _tp1, _tp2 ) ){
+					book->fill( "bg_mass", lv.M() );
+					book->fill( "bg_pt_vs_mass", lv.M(), lv.Pt() );
+				} else {
+					book->fill( "purebg_mass", lv.M() );
+					book->fill( "purebg_pt_vs_mass", lv.M(), lv.Pt() );
+				}
+			}
+
 			nPairs++;
 		}
 

@@ -63,6 +63,12 @@ public:
 			return false;
 
 
+		if ( range.count( "mtdMatchFlag" ) && (_proxy._mtdPid == nullptr || !range["mtdMatchFlag"].inInclusiveRange( _proxy._mtdPid->mMatchFlag ) ))
+			return false;
+		if ( range.count( "mtdTriggerFlag" ) && (_proxy._mtdPid == nullptr || !range["mtdTriggerFlag"].inInclusiveRange( _proxy._mtdPid->mTriggerFlag ) ))
+			return false;
+
+
 
 		return true;
 	}
