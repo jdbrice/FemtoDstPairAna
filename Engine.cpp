@@ -12,6 +12,7 @@ using namespace jdb;
 
 #include "FemtoDstSkimmer/FemtoDstSkimmer.h"
 #include "SameEventSkimmer/SameEventSkimmer.h"
+#include "SameEventSkimmer/McSkimmer.h"
 #include "SameEventSkimmer/SingleTrackSkimmer.h"
 #include "SameEventSkimmer/PidQAMaker.h"
 #include "MixedEventSkimmer/MixedEventAnalyzer.h"
@@ -34,6 +35,8 @@ int main( int argc, char* argv[] ) {
 	TaskFactory::registerTaskRunner<WeightedTrackMeans>( "WeightedTrackMeans" );
 	TaskFactory::registerTaskRunner<SignalRebinner>( "SignalRebinner" );
 	TaskFactory::registerTaskRunner<PidQAMaker>( "PidQAMaker" );
+
+	TaskFactory::registerTaskRunner<McSkimmer>( "McSkimmer" );
 
 	TaskEngine engine( argc, argv );
 
