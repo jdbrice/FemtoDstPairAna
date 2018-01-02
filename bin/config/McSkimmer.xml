@@ -38,12 +38,6 @@
 			<Histo prefixes="mc_, tpc_, mtd_" name="mass_pt1_pt2" titles="MC, TPC, MTD" bins_x="bins.mass" bins_y="bins.pT" bins_z="bins.pT" />
 			<Histo prefixes="mc_, tpc_, mtd_" name="pt_pt1_pt2" titles="MC, TPC, MTD" bins_x="bins.pT" bins_y="bins.pT" bins_z="bins.pT" />
 
-
-			<Histo name="nPairs" title="# (+-) pairs" bins_x="bins.n" />
-			<Histo name="nPos" title="# + sig" bins_x="bins.n" />
-			<Histo name="nNeg" title="# - sig" bins_x="bins.n" />
-			<Histo name="nPos_nNeg" title="# + vs. - sig" bins_x="bins.n" bins_y="bins.n" />
-
 		</histograms>
 
 	</FDS>

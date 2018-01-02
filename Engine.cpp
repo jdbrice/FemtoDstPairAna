@@ -19,6 +19,7 @@ using namespace jdb;
 #include "SingleTrackAna/SingleTrackAna.h"
 #include "SingleTrackAna/WeightedTrackMeans.h"
 #include "SameEventSkimmer/SignalRebinner.h"
+#include "SameEventSkimmer/EfficiencyTableMaker.h"
 
 #define LOGURU_IMPLEMENTATION 1
 #include "vendor/loguru.h"
@@ -37,6 +38,7 @@ int main( int argc, char* argv[] ) {
 	TaskFactory::registerTaskRunner<PidQAMaker>( "PidQAMaker" );
 
 	TaskFactory::registerTaskRunner<McSkimmer>( "McSkimmer" );
+	TaskFactory::registerTaskRunner<EfficiencyTableMaker>( "EfficiencyTableMaker" );
 
 	TaskEngine engine( argc, argv );
 

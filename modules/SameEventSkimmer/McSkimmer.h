@@ -65,6 +65,12 @@ public:
 		sMin = 0.8;
 	}
 
+	bool keepMcTrack( FemtoTrackProxy &_tp ){
+		if ( nullptr == _tp._mcTrack || _tp._mcTrack->mParentIndex >= 0 )
+			return false;
+		return true;
+	} 
+
 protected:
 
 	virtual void analyzeEvent(){
@@ -85,14 +91,21 @@ protected:
 			_proxy.assemble( i, _rMcTracks, _rTracks, _rMtdPid );
 			
 			if ( _proxy._mcTrack->mPt < 0.1 ) continue;
+			if ( false == keepMcTrack( _proxy ) ) continue;
 
 			for (size_t j = i; j < nMcTracks; j++ ){
 				if ( i == j ) continue;
 				_proxy2.assemble( j, _rMcTracks, _rTracks, _rMtdPid );
 
 				if ( _proxy2._mcTrack->mPt < 0.1 ) continue;
+				if ( false == keepMcTrack( _proxy2 ) ) continue;
 				_proxy2._pid = 0;
-				analyze_pair( _proxy, _proxy2, "mc_" );
+
+				if ( _proxy._mcTrack->mCharge == 1 && _proxy2._mcTrack->mCharge == -1 )
+					analyze_pair( _proxy, _proxy2, "mc_" );
+				else if ( _proxy._mcTrack->mCharge == -1 && _proxy2._mcTrack->mCharge == 1 )
+					analyze_pair( _proxy2, _proxy, "mc_" );
+				
 			}
 		}
 
@@ -103,12 +116,21 @@ protected:
 			_proxy.assemble( i, _rTracks, _rMtdPid );
 			if ( _proxy._track->mPt < 0.1 ) continue;
 			if ( _proxy._track->mMcIndex < 0 ) continue;
+			_proxy._mcTrack = _rMcTracks.get( _proxy._track->mMcIndex );
+			if ( false == keepMcTrack( _proxy ) ) continue;
 			for (size_t j = i; j < nTracks; j++ ){
 				if ( i == j ) continue;
 				_proxy2.assemble( j, _rTracks, _rMtdPid );
 				if ( _proxy2._track->mPt < 0.1 ) continue;
 				if ( _proxy2._track->mMcIndex < 0 ) continue;
-				analyze_pair( _proxy, _proxy2, "tpc_" );
+				_proxy2._mcTrack = _rMcTracks.get( _proxy2._track->mMcIndex );
+				if ( false == keepMcTrack( _proxy2 ) ) continue;
+				
+
+				if ( _proxy._track->charge() == 1 && _proxy2._track->charge() == -1 )
+					analyze_pair( _proxy, _proxy2, "tpc_" );
+				else if ( _proxy._track->charge() == -1 && _proxy2._track->charge() == 1 )
+					analyze_pair( _proxy2, _proxy, "tpc_" );
 			}
 		}
 
@@ -125,6 +147,8 @@ protected:
 			if ( false == _trackFilter.pass( _proxy ) )
 				continue;
 			if ( _proxy._track->mMcIndex < 0 ) continue;
+			_proxy._mcTrack = _rMcTracks.get( _proxy._track->mMcIndex );
+			if ( false == keepMcTrack( _proxy ) ) continue;
 
 			
 			if ( _proxy._track->charge() > 0 )
@@ -146,9 +170,14 @@ protected:
 					continue;
 
 				if ( _proxy2._track->mMcIndex < 0 ) continue;
+				_proxy2._mcTrack = _rMcTracks.get( _proxy2._track->mMcIndex );
+				if ( false == keepMcTrack( _proxy2 ) ) continue;
 				
 				_proxy2._pid = _mlp.evaluate( _proxy2 );
-				analyze_pair( _proxy, _proxy2, "mtd_" );
+				if ( _proxy._track->charge() == 1 && _proxy2._track->charge() == -1 )
+					analyze_pair( _proxy, _proxy2, "mtd_" );
+				else if ( _proxy._track->charge() == -1 && _proxy2._track->charge() == 1 )
+					analyze_pair( _proxy2, _proxy, "mtd_" );
 			}
 		}
 
@@ -183,6 +212,9 @@ protected:
 		}
 
 		lv = lv1 + lv2;
+
+		// LOG_F( INFO, "prefix=%s, Y=%f, chargeSum=%d", _prefix.c_str(), lv.Rapidity(), chargeSum );
+		if ( fabs( lv.Rapidity() ) > 0.5 ) return;
 
 		if ( 0 == chargeSum ){
 			// pair mass vs. d1 pt vs. d2 pt

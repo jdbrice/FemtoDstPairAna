@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<config>
+	<Task name="EfficiencyTableMaker" type="EfficiencyTableMaker" config="" nodePath="FDS" />
+
+	<FDS>
+		<input>
+			<TFile url="mc_all.root" />
+		</input>
+		<output>
+			<TFile url="mc_eff_table.root" />
+		</output>
+	</FDS>
+
+	
+
+	<bins>
+		<mass width="0.010" min="0" max="4.0" />
+		<pT width="0.050" min="0" max="5" />
+	</bins>
+
+</config>
