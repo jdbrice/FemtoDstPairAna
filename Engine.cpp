@@ -25,8 +25,6 @@ using namespace jdb;
 #include "vendor/loguru.h"
 
 int main( int argc, char* argv[] ) {
-	loguru::add_file("everything.log", loguru::Truncate, loguru::Verbosity_MAX);
-
 
 	TaskFactory::registerTaskRunner<FemtoDstSkimmer>( "FemtoDstSkimmer" );
 	TaskFactory::registerTaskRunner<MixedEventAnalyzer>( "MixedEventAnalyzer" );
